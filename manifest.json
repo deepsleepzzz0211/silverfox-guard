@@ -1,0 +1,44 @@
+{
+  "manifest_version": 3,
+  "name": "银狐防护 SilverFox Guard",
+  "short_name": "银狐防护",
+  "version": "1.0.7",
+  "description": "拦截银狐（Winos/ValleyRAT）木马钓鱼网站与仿冒软件下载站，基于开源威胁情报（LGSRC/OpenPhish/URLhaus）与启发式规则，支持 Chrome 与 Edge。",
+  "minimum_chrome_version": "116",
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "permissions": [
+    "storage",
+    "alarms",
+    "webRequest",
+    "downloads",
+    "notifications"
+  ],
+  "host_permissions": ["<all_urls>"],
+  "background": {
+    "service_worker": "background/service-worker.js",
+    "type": "module"
+  },
+  "action": {
+    "default_popup": "pages/popup/popup.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    },
+    "default_title": "银狐防护"
+  },
+  "options_page": "pages/options/options.html",
+  "content_scripts": [
+    {
+      "matches": ["http://*/*", "https://*/*"],
+      "js": ["content/content.js"],
+      "run_at": "document_idle"
+    }
+  ]
+}

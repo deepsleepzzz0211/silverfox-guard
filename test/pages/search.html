@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>deepseek - 搜索</title>
+</head>
+<body style="font-family:'Microsoft YaHei';max-width:760px;margin:0 auto;padding:20px;background:#fdfdfd">
+  <!-- 回归验证页：模拟 Bing/百度搜索结果页。
+       访问方式必须带查询参数：http://127.0.0.1.nip.io:8000/search.html?q=deepseek
+       预期：银狐防护不注入红色警告条（搜索结果页豁免：URL 含 q= 参数 / 平台域名豁免 /
+       且模拟页虽含品牌词与官方下载字样，但属正常内容）。 -->
+  <h1>deepseek - 搜索</h1>
+  <div style="border:1px solid #eee;border-radius:8px;padding:12px;margin:12px 0">
+    <h3><a href="#">DeepSeek 官网 - deepseek 官方下载</a></h3>
+    <p>DeepSeek 官方下载最新版，提供 deepseek 官方下载通道与 WPS Office、Chrome 等软件的高速下载……</p>
+    <small>本条结果来自搜索引擎快照，正文包含"官方下载"等词属正常现象</small>
+  </div>
+  <div style="border:1px solid #eee;border-radius:8px;padding:12px;margin:12px 0">
+    <h3><a href="files/WPS_2025_setup.exe">某网盘 - deepseek 安装包.exe 下载</a></h3>
+    <p>点击结果中的文件链接时应触发下载确认，但页面本身不应出现红色警告条。</p>
+  </div>
+</body>
+</html>

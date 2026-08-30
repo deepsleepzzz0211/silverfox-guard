@@ -1,0 +1,104 @@
+# 发版工作流：打 tag（v*.*.*）自动构建扩展包并挂到 GitHub Release
+# 产物：silverfox-guard-v<版本>.zip（内含最新拉取的情报基线，可直接加载安装）
+name: Release Extension
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: '要发布的 tag，例如 v1.0.7'
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    name: Build and publish release
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref }}
+          fetch-depth: 0
+
+      - name: Validate release ref
+        shell: bash
+        env:
+          INPUT_TAG: ${{ github.event.inputs.tag }}
+        run: |
+          TAG="${INPUT_TAG:-${GITHUB_REF_NAME}}"
+          if ! git rev-parse -q --verify "refs/tags/$TAG" >/dev/null; then
+            echo "Release tag $TAG does not exist in the checked-out repository" >&2
+            exit 1
+          fi
+          TAG_SHA="$(git rev-list -n 1 "$TAG")"
+          HEAD_SHA="$(git rev-parse HEAD)"
+          if [ "$HEAD_SHA" != "$TAG_SHA" ]; then
+            echo "Checked-out HEAD $HEAD_SHA does not match release tag $TAG ($TAG_SHA)" >&2
+            exit 1
+          fi
+
+      - name: Check tag matches manifest version
+        shell: bash
+        run: |
+          TAG="${GITHUB_REF_NAME#v}"
+          MANIFEST="$(python -c "import json; print(json.load(open('manifest.json', encoding='utf-8'))['version'])")"
+          if [ "$TAG" != "$MANIFEST" ]; then
+            echo "Tag v$TAG does not match manifest.json version $MANIFEST" >&2
+            exit 1
+          fi
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Run unit tests
+        run: |
+          node test/detector.test.mjs
+          node test/otx.test.mjs
+
+      # 拉取全部情报源重建基线（含重试）；全部失败时降级用仓库内基线，不阻塞发版
+      - name: Refresh threat-intel baseline
+        shell: bash
+        run: |
+          ok=0
+          for i in 1 2 3; do
+            if python tools/build_blocklist.py; then ok=1; break; fi
+            echo "attempt $i failed, retrying in 20s..." >&2
+            sleep 20
+          done
+          if [ "$ok" != "1" ]; then
+            git checkout -- data/blocklist.json
+            echo "::warning::Baseline refresh failed, falling back to committed baseline" >&2
+          fi
+
+      - name: Build extension package
+        run: python tools/build_dist.py
+
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: 银狐防护 SilverFox Guard ${{ github.ref_name }}
+          body: |
+            安装方法：解压 zip 后，在 Chrome/Edge 扩展管理页开启「开发者模式」→「加载已解压的扩展程序」选择解压目录。
+            详细图文指南见仓库 `pages/guide/guide.html`。
+            免责声明：启发式检测存在误报可能，仅供防护参考。
+          files: dist/*.zip
+          generate_release_notes: true

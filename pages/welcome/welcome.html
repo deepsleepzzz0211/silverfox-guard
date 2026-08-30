@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>欢迎使用银狐防护</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: "Microsoft YaHei", "Segoe UI", sans-serif;
+      background: linear-gradient(160deg, #2b2d42 0%, #404258 100%);
+      min-height: 100vh; color: #222;
+      display: flex; align-items: center; justify-content: center; padding: 24px;
+    }
+    .card {
+      max-width: 760px; width: 100%; background: #fff; border-radius: 20px;
+      box-shadow: 0 16px 60px rgba(0,0,0,.35); overflow: hidden;
+    }
+    .header { text-align: center; padding: 40px 32px 24px; }
+    .header .logo { font-size: 56px; }
+    .header h1 { font-size: 26px; margin-top: 10px; }
+    .header p { color: #888; font-size: 15px; margin-top: 8px; line-height: 1.7; }
+    .steps { display: flex; gap: 14px; padding: 8px 28px 20px; }
+    .step {
+      flex: 1; background: #f8f8fa; border-radius: 14px; padding: 22px 18px;
+      border: 1px solid #eee;
+    }
+    .step .num {
+      width: 34px; height: 34px; border-radius: 50%; background: #d62828; color: #fff;
+      font-weight: bold; display: flex; align-items: center; justify-content: center;
+      font-size: 17px; margin-bottom: 12px;
+    }
+    .step h2 { font-size: 16px; margin-bottom: 8px; }
+    .step p { font-size: 13px; color: #666; line-height: 1.8; }
+    .step b { color: #d62828; }
+    .promise {
+      margin: 0 28px 20px; background: #e6f4ea; border: 1px solid #b7dfc2;
+      border-radius: 12px; padding: 14px 18px; font-size: 13px; color: #1e7b34; line-height: 1.9;
+    }
+    .actions { text-align: center; padding: 0 28px 28px; }
+    .actions button {
+      background: #d62828; color: #fff; border: none; border-radius: 12px;
+      font-size: 18px; padding: 14px 60px; cursor: pointer; font-family: inherit;
+      box-shadow: 0 6px 20px rgba(214,40,40,.35);
+    }
+    .actions button:hover { background: #b91f1f; }
+    .foot { text-align: center; font-size: 12px; color: #aaa; padding-bottom: 22px; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="header">
+      <div class="logo">🦊</div>
+      <h1>银狐防护已安装成功</h1>
+      <p>从现在起，它会自动在后台保护你的浏览器，<b style="color:#1e7b34">不需要你做任何设置</b>。</p>
+    </div>
+
+    <div class="steps">
+      <div class="step">
+        <div class="num">1</div>
+        <h2>它会自动拦截</h2>
+        <p>当你不小心打开仿冒 WPS、Chrome、百度网盘等软件的<b>钓鱼下载站</b>时，会自动弹出一个<b>红色警告页</b>，阻止你继续访问。</p>
+      </div>
+      <div class="step">
+        <div class="num">2</div>
+        <h2>下载前会提醒你</h2>
+        <p>在可疑网站点击 <b>.exe 安装包</b>等文件时，会先弹出确认框——银狐木马就是靠伪装成安装包害人的。</p>
+      </div>
+      <div class="step">
+        <div class="num">3</div>
+        <h2>误拦了怎么办</h2>
+        <p>如果警告页提示的<b>确实是你认识的正规网站</b>，点"我了解风险，仍要访问"即可，30 分钟内不会再拦；也可以到设置页加入白名单。</p>
+      </div>
+    </div>
+
+    <div class="promise">
+      ✅ <b>你不需要做任何事：</b>防护默认开启 · 威胁名单每天自动更新 · 完全免费 · 不收集你的任何浏览数据。<br>
+      💡 <b>唯一要记住的：</b>看到红色警告页，除非你 100% 确定网站没问题，否则一律点"返回安全页面"。
+    </div>
+
+    <div class="actions">
+      <button id="btnStart">🛡️ 开始保护</button>
+      <div style="margin-top:14px;font-size:13px">
+        <a href="../guide/guide.html" target="_blank" style="color:#3b5bdb">📖 查看完整图文安装指南（小白版）</a>
+      </div>
+    </div>
+    <div class="foot">银狐防护 SilverFox Guard · 点击"开始保护"关闭本页</div>
+  </div>
+  <script src="welcome.js"></script>
+</body>
+</html>

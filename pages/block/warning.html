@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>已拦截 - 银狐防护</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: "Microsoft YaHei", "Segoe UI", sans-serif;
+      background: #f5f5f7;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+    .card {
+      max-width: 640px;
+      width: 100%;
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 8px 32px rgba(0,0,0,.12);
+      overflow: hidden;
+    }
+    .header {
+      background: #d62828;
+      color: #fff;
+      padding: 28px 32px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .header .icon { font-size: 40px; }
+    .header h1 { font-size: 22px; }
+    .header p { opacity: .9; font-size: 13px; margin-top: 4px; }
+    .body { padding: 28px 32px; }
+    .meta { margin-bottom: 18px; }
+    .meta .label { font-size: 12px; color: #888; margin-bottom: 2px; }
+    .meta .value { font-size: 14px; color: #222; word-break: break-all; }
+    .reason {
+      background: #fdecea;
+      border-left: 4px solid #d62828;
+      padding: 12px 16px;
+      border-radius: 6px;
+      font-size: 14px;
+      line-height: 1.7;
+      color: #7a1f1a;
+      margin-bottom: 18px;
+    }
+    .tips {
+      background: #fff8e6;
+      border: 1px solid #f2e3b3;
+      border-radius: 8px;
+      padding: 14px 16px;
+      font-size: 13px;
+      color: #6b5b1e;
+      line-height: 1.8;
+      margin-bottom: 24px;
+    }
+    .tips b { color: #8a6d00; }
+    .actions { display: flex; gap: 12px; }
+    button {
+      flex: 1;
+      padding: 12px 0;
+      font-size: 15px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      font-family: inherit;
+    }
+    .btn-back { background: #e8e8ed; color: #333; }
+    .btn-back:hover { background: #dcdce2; }
+    .btn-continue {
+      background: #fff;
+      color: #d62828;
+      border: 1.5px solid #d62828 !important;
+    }
+    .btn-continue:hover { background: #fdecea; }
+    .foot { text-align: center; font-size: 12px; color: #aaa; padding-bottom: 20px; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="header">
+      <div class="icon">🦊</div>
+      <div>
+        <h1>危险网站已被拦截</h1>
+        <p>银狐防护 · SilverFox Guard</p>
+      </div>
+    </div>
+    <div class="body">
+      <div class="meta">
+        <div class="label">拦截类别</div>
+        <div class="value" id="category">加载中…</div>
+      </div>
+      <div class="meta">
+        <div class="label">目标网址</div>
+        <div class="value" id="url">-</div>
+      </div>
+      <div class="reason" id="reason">-</div>
+      <div class="tips">
+        <b>银狐木马提示：</b>银狐（Winos/ValleyRAT）远控木马常通过仿冒 WPS、Chrome、向日葵、爱思助手等软件的下载站传播。
+        若继续访问，<b>切勿下载运行任何 .exe / .msi / .zip 安装包</b>，不要输入手机号、验证码或扫描陌生二维码。
+      </div>
+      <div class="actions">
+        <button class="btn-back" id="btnBack">返回安全页面</button>
+        <button class="btn-continue" id="btnContinue">我了解风险，仍要访问</button>
+      </div>
+    </div>
+    <div class="foot">拦截依据：开源威胁情报（LGSRC / OpenPhish / URLhaus）+ 启发式规则，存在误报可能</div>
+  </div>
+  <script src="warning.js"></script>
+</body>
+</html>

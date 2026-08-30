@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><title>银狐防护 - 本地测试首页</title></head>
+<body style="font-family:'Microsoft YaHei';max-width:720px;margin:40px auto;line-height:2">
+  <h2>🧪 本地模拟钓鱼页（用于人工验证，非真实恶意页面）</h2>
+  <p>启动本地服务后，通过 <code>http://127.0.0.1.nip.io:8000/</code> 访问
+    （nip.io 将该域名解析到 127.0.0.1，同时让页面域名不是 localhost/纯 IP，
+    以便扩展的检测逻辑正常工作）：</p>
+  <pre>python -m http.server 8000 --bind 127.0.0.1</pre>
+  <ul>
+    <li><a href="fake-wps.html">仿冒 WPS 下载站</a> —— 验证 content.js 页面级检测：应出现红色警告条 + 下载链接点击确认</li>
+    <li><a href="fake-chrome.html">仿冒 Chrome 下载站</a> —— 同上（不同品牌词）</li>
+    <li><a href="search.html?q=deepseek">模拟搜索结果页（回归）</a> —— <b>不应</b>出现警告条（搜索引擎豁免；v1.0.2 修复 cn.bing.com 误报）</li>
+    <li><a href="benign.html">正常页面（对照）</a> —— 不应触发任何警告</li>
+  </ul>
+  <p>导航级检测（黑名单 / 启发式）由 <code>node test/detector.test.mjs</code> 覆盖；
+    加载扩展后可在扩展管理页 Service Worker 控制台观察拦截日志。</p>
+</body>
+</html>

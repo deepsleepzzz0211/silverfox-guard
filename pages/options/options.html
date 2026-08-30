@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>设置 - 银狐防护</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: "Microsoft YaHei", "Segoe UI", sans-serif;
+      background: #f5f5f7; color: #222; padding: 32px 0;
+    }
+    .wrap { max-width: 680px; margin: 0 auto; }
+    h1 { font-size: 20px; margin-bottom: 4px; }
+    .sub { font-size: 12px; color: #999; margin-bottom: 24px; }
+    .card {
+      background: #fff; border-radius: 12px; padding: 20px 24px;
+      box-shadow: 0 1px 6px rgba(0,0,0,.06); margin-bottom: 18px;
+    }
+    .card h2 { font-size: 15px; margin-bottom: 14px; color: #d62828; }
+    .row { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; }
+    .row + .row { border-top: 1px solid #f0f0f0; }
+    .row .name { font-size: 14px; }
+    .row .desc { font-size: 12px; color: #888; margin-top: 2px; }
+    .switch { position: relative; width: 42px; height: 22px; flex: none; cursor: pointer; }
+    .switch input { display: none; }
+    .slider { position: absolute; inset: 0; background: #ccc; border-radius: 22px; transition: .2s; }
+    .slider::before {
+      content: ""; position: absolute; width: 16px; height: 16px; border-radius: 50%;
+      background: #fff; top: 3px; left: 3px; transition: .2s;
+    }
+    input:checked + .slider { background: #34a853; }
+    input:checked + .slider::before { transform: translateX(20px); }
+
+    select, input[type="text"] {
+      padding: 8px 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 13px;
+      font-family: inherit; background: #fff;
+    }
+    input[type="text"] { flex: 1; }
+    .wl-row { display: flex; gap: 10px; margin-top: 8px; }
+    button {
+      padding: 8px 16px; border: none; border-radius: 8px; cursor: pointer;
+      font-size: 13px; font-family: inherit; background: #e8e8ed; color: #333;
+    }
+    button:hover { background: #dcdce2; }
+    button.primary { background: #d62828; color: #fff; }
+    button.primary:hover { background: #b91f1f; }
+    button.mini { padding: 4px 10px; font-size: 12px; background: #fdecea; color: #a11d16; }
+    #wlList { margin-top: 12px; }
+    #wlList div {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 6px 10px; font-size: 13px; border-bottom: 1px dashed #eee;
+    }
+    #updateResult { font-size: 12px; color: #666; margin-top: 10px; line-height: 1.8; }
+    .note { font-size: 12px; color: #999; line-height: 1.8; margin-top: 10px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>🦊 银狐防护 · 设置</h1>
+    <div class="sub">SilverFox Guard — 拦截银狐（Winos/ValleyRAT）钓鱼网站与仿冒软件下载站</div>
+
+    <div class="card">
+      <h2>防护策略</h2>
+      <div class="row">
+        <div>
+          <div class="name">检测灵敏度</div>
+          <div class="desc">标准：启发式评分 ≥55 拦截；严格：评分阈值降至 40，更激进也更易误报</div>
+        </div>
+        <select id="sensitivity">
+          <option value="standard">标准</option>
+          <option value="strict">严格</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>威胁情报数据源（每日自动更新）</h2>
+      <div class="row">
+        <div>
+          <div class="name">LGSRC 银狐专项情报</div>
+          <div class="desc">已核实银狐恶意网站（Archive_2）+ 未核实疑似站点（Archive_3）</div>
+        </div>
+        <label class="switch"><input type="checkbox" id="srcLgsrc"><span class="slider"></span></label>
+      </div>
+      <div class="row">
+        <div>
+          <div class="name">OTX 银狐专项情报</div>
+          <div class="desc">AlienVault OTX「SilverFox (银狐)」pulse，LGSRC 作者维护、每日更新，含 200+ 仿冒域名；无需 API Key</div>
+        </div>
+        <label class="switch"><input type="checkbox" id="srcOtx"><span class="slider"></span></label>
+      </div>
+      <div class="row">
+        <div>
+          <div class="name">ThreatFox 家族标注 IOC（abuse.ch）</div>
+          <div class="desc">含 ValleyRAT/Winos/Gh0st 等家族标注的活跃聚合源，非商业免费</div>
+        </div>
+        <label class="switch"><input type="checkbox" id="srcThreatfox"><span class="slider"></span></label>
+      </div>
+      <div class="row">
+        <div>
+          <div class="name">CyberCrime Tracker（Gh0st 系 C2 追踪）</div>
+          <div class="desc">银狐远控血统专项追踪站，每日全量约 2 万条 C2 地址</div>
+        </div>
+        <label class="switch"><input type="checkbox" id="srcCybercrime"><span class="slider"></span></label>
+      </div>
+      <div class="row">
+        <div>
+          <div class="name">YYT 银狐专项源</div>
+          <div class="desc">同类银狐拦截项目的远程规则（约 7000 条 .com.cn 仿冒域名）；个人源，失败自动跳过</div>
+        </div>
+        <label class="switch"><input type="checkbox" id="srcYyt"><span class="slider"></span></label>
+      </div>
+      <div class="row">
+        <div>
+          <div class="name">uBO badware 规则</div>
+          <div class="desc">uBlock Origin 官方恶意/钓鱼域名规则（3700+ 条，带来源佐证，GPL-3.0）</div>
+        </div>
+        <label class="switch"><input type="checkbox" id="srcUbo"><span class="slider"></span></label>
+      </div>
+      <div class="row">
+        <div>
+          <div class="name">Inversion-DNSBL（Google 侧恶意主机名）</div>
+          <div class="desc">源自 Google Safe Browsing 扫描的 1.8 万恶意主机名，日更（CC BY-NC-SA）</div>
+        </div>
+        <label class="switch"><input type="checkbox" id="srcInversion"><span class="slider"></span></label>
+      </div>
+      <div class="row">
+        <div>
+          <div class="name">OTX pulse ID</div>
+          <div class="desc">默认订阅 SilverFox 专项；可填多个（逗号分隔）订阅其他公开 pulse</div>
+        </div>
+        <input type="text" id="otxPulseIds" style="max-width:300px" placeholder="6a36fe5a3c1568785b59c4d7">
+      </div>
+      <div class="row">
+        <div>
+          <div class="name">OpenPhish 通用钓鱼源</div>
+          <div class="desc">全球钓鱼 URL 社区 feed（域名粒度）</div>
+        </div>
+        <label class="switch"><input type="checkbox" id="srcOpenphish"><span class="slider"></span></label>
+      </div>
+      <div class="row">
+        <div>
+          <div class="name">URLhaus 恶意软件分发源</div>
+          <div class="desc">abuse.ch 恶意软件下载站情报（对应银狐“下载站”环节）</div>
+        </div>
+        <label class="switch"><input type="checkbox" id="srcUrlhaus"><span class="slider"></span></label>
+      </div>
+      <div class="row">
+        <div><div class="name">立即更新</div><div class="desc" id="updatedAt">-</div></div>
+        <button class="primary" id="btnUpdate">🔄 更新</button>
+      </div>
+      <div id="updateResult"></div>
+    </div>
+
+    <div class="card">
+      <h2>白名单</h2>
+      <div class="note">加入白名单的域名（及其子域）将跳过所有检测。请填写主域名，如 example.com</div>
+      <div class="wl-row">
+        <input type="text" id="wlInput" placeholder="example.com">
+        <button class="primary" id="btnAdd">加入白名单</button>
+      </div>
+      <div id="wlList"></div>
+    </div>
+
+    <div class="card">
+      <h2>关于</h2>
+      <div class="note">
+        检测依据：CNCERT 2026-05 银狐钓鱼网站通报、360《2025 银狐木马年度报告》、安天游蛇技战术追踪。<br>
+        黑名单来自公开威胁情报（LGSRC / OpenPhish / URLhaus），启发式规则基于银狐域名特征归纳。<br>
+        <b>免责声明：</b>启发式检测存在误报可能，白名单数据仅供防护参考，不构成安全保证。访问可疑网站时请始终保持警惕，勿下载运行来源不明的安装包。
+      </div>
+      <div class="row" style="border:none;margin-top:10px">
+        <div class="name">不太懂电脑？</div>
+        <button onclick="window.open('../guide/guide.html')">📖 打开图文指南</button>
+      </div>
+    </div>
+  </div>
+  <script src="options.js"></script>
+</body>
+</html>

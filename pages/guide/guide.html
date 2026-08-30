@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>银狐防护 · 安装使用指南（小白版）</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: "Microsoft YaHei", "Segoe UI", sans-serif;
+      background: #f5f5f7; color: #222; line-height: 1.9; padding: 30px 16px;
+    }
+    .wrap { max-width: 780px; margin: 0 auto; }
+    h1 { font-size: 26px; text-align: center; margin: 10px 0 6px; }
+    .sub { text-align: center; color: #888; font-size: 14px; margin-bottom: 28px; }
+    .card {
+      background: #fff; border-radius: 14px; padding: 24px 28px; margin-bottom: 20px;
+      box-shadow: 0 1px 6px rgba(0,0,0,.06);
+    }
+    h2 { font-size: 19px; margin-bottom: 14px; }
+    h2 .tag {
+      display: inline-block; background: #d62828; color: #fff; font-size: 14px;
+      border-radius: 8px; padding: 2px 12px; margin-right: 10px; vertical-align: 2px;
+    }
+    ol.big { padding-left: 0; list-style: none; counter-reset: step; }
+    ol.big li {
+      counter-increment: step; position: relative; padding: 12px 0 12px 58px;
+      font-size: 15px; border-bottom: 1px dashed #eee;
+    }
+    ol.big li:last-child { border-bottom: none; }
+    ol.big li::before {
+      content: counter(step); position: absolute; left: 0; top: 12px;
+      width: 40px; height: 40px; background: #eef1ff; color: #3b5bdb; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 19px; font-weight: bold;
+    }
+    .type {
+      display: inline-block; background: #fff3cd; border: 1px solid #eee0a8;
+      border-radius: 6px; padding: 1px 8px; font-family: Consolas, monospace;
+      font-size: 14px; color: #7a5b00;
+    }
+    .big-red {
+      display: inline-block; background: #d62828; color: #fff; border-radius: 6px;
+      padding: 2px 10px; font-weight: bold;
+    }
+    .tip {
+      background: #e7f1ff; border-left: 4px solid #3b5bdb; border-radius: 6px;
+      padding: 10px 14px; font-size: 13.5px; color: #274690; margin-top: 14px;
+    }
+    .warn-tip {
+      background: #fdecea; border-left: 4px solid #d62828; border-radius: 6px;
+      padding: 10px 14px; font-size: 13.5px; color: #7a1f1a; margin-top: 14px;
+    }
+    .qa { padding: 12px 0; border-bottom: 1px dashed #eee; font-size: 14.5px; }
+    .qa:last-child { border-bottom: none; }
+    .qa b { color: #3b5bdb; display: block; margin-bottom: 4px; }
+    .badge {
+      display: inline-block; background: #1e7b34; color: #fff; font-size: 12px;
+      border-radius: 10px; padding: 1px 10px; margin-left: 8px; vertical-align: 2px;
+    }
+    .center { text-align: center; color: #999; font-size: 12.5px; padding: 10px 0 30px; }
+    kbd {
+      background: #333; color: #fff; border-radius: 4px; padding: 1px 7px;
+      font-family: Consolas, monospace; font-size: 13px;
+    }
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <h1>🦊 银狐防护 · 安装使用指南</h1>
+  <div class="sub">适合 Chrome 和 Edge 浏览器 · 全程约 3 分钟 · 装完即用，无需任何设置</div>
+
+  <div class="card">
+    <h2><span class="tag">第一步</span>找到扩展文件夹</h2>
+    <ol class="big">
+      <li>确保你已经拿到整个「浏览器扩展」文件夹（里面有 <span class="type">manifest.json</span> 这个文件），随便放在哪个盘都行，<b>装好后不要删除或移动它</b>。</li>
+      <li>记住文件夹的位置（例如桌面上的「浏览器扩展」文件夹）。</li>
+    </ol>
+  </div>
+
+  <div class="card">
+    <h2><span class="tag">第二步</span>打开浏览器的扩展管理页</h2>
+    <ol class="big">
+      <li><b>Edge 用户：</b>在浏览器顶部地址栏输入 <span class="type">edge://extensions</span> 然后回车。</li>
+      <li><b>Chrome 用户：</b>输入 <span class="type">chrome://extensions</span> 然后回车。</li>
+      <li>在页面<b>左侧或顶部</b>找到「开发者模式」的开关，把它<b>打开</b>（开关变蓝/变绿就是开了）。</li>
+    </ol>
+    <div class="tip">💡 找不到「开发者模式」？Edge 在左侧栏，Chrome 在页面右上角。它只是一个安装开关，不影响电脑安全。</div>
+  </div>
+
+  <div class="card">
+    <h2><span class="tag">第三步</span>把扩展装进去</h2>
+    <ol class="big">
+      <li>点击页面上出现的「<b>加载解压缩的扩展</b>」按钮（Edge 也叫「加载解压缩的扩展」，Chrome 叫「加载已解压的扩展程序」）。</li>
+      <li>在弹出的窗口里，选中<b>第一步的那个文件夹</b>，点「选择文件夹」。</li>
+      <li>列表里出现「<b>银狐防护 SilverFox Guard</b>」，并且没有红色报错，就装好了！🎉</li>
+      <li>这时会自动弹出一个欢迎页，看一眼就明白了，点「开始保护」关掉即可。</li>
+    </ol>
+    <div class="tip">💡 建议把它固定到工具栏：点浏览器右上角的<b>拼图图标 🧩</b>，找到「银狐防护」，点旁边的📌图钉。以后点小狐狸图标就能看到保护状态。</div>
+  </div>
+
+  <div class="card">
+    <h2><span class="tag">日常使用</span>装完之后要做什么？<span class="badge">什么都不用做</span></h2>
+    <ol class="big">
+      <li>扩展在后台<b>全自动工作</b>：危险名单每天自动更新，不用手动操作。</li>
+      <li>看到<b style="background:#d62828;color:#fff;border-radius:5px;padding:1px 8px">红色警告页</b>时：除非你 100% 确定这个网站没问题，否则一律点「<b>返回安全页面</b>」。</li>
+      <li>下载文件时弹出「可疑下载确认」：不确定就点「取消」，确定安全点「继续打开」。</li>
+      <li>想看拦截了多少次：点工具栏的小狐狸图标。</li>
+    </ol>
+    <div class="warn-tip">⚠️ 红色警告页 ≠ 广告弹窗。它是真的检测到这个网站像银狐木马钓鱼站（仿冒 WPS/Chrome/百度网盘等下载站的病毒网站），请认真对待。</div>
+  </div>
+
+  <div class="card">
+    <h2><span class="tag">常见问题</span></h2>
+    <div class="qa"><b>它误拦了我认识的安全网站怎么办？</b>
+      点警告页的「我了解风险，仍要访问」可以进入该网站（30 分钟内不再拦截）。如果经常访问，点浏览器右上角小狐狸 →「⚙️ 设置」→ 白名单，把这个网站的主域名加进去。</div>
+    <div class="qa"><b>会拖慢电脑 / 浏览器吗？</b>
+      几乎不会。它只在打开网页的一瞬间做一次快速判断，正常网站的检测在毫秒级完成。</div>
+    <div class="qa"><b>收费吗？会上传我的浏览记录吗？</b>
+      完全免费，不收集不上传任何浏览数据，所有检测都在你自己的电脑上完成。</div>
+    <div class="qa"><b>每次打开浏览器都要重新装吗？</b>
+      不用，装一次永久有效。名单会自动更新；也可以点小狐狸 →「🔄 更新名单」手动更新。</div>
+    <div class="qa"><b>怎么卸载？</b>
+      打开第二步的扩展管理页，找到「银狐防护」，点「移除/删除」即可。</div>
+    <div class="qa"><b>公司/学校的电脑装不了？</b>
+      部分单位电脑由管理员统一管控，禁止安装扩展。请联系管理员，或在自己个人的电脑上使用。</div>
+  </div>
+
+  <div class="card">
+    <h2><span class="tag">提醒</span>再好的防护也代替不了好习惯</h2>
+    <ol class="big">
+      <li>软件只从<b>官方网站</b>或系统自带的<b>应用商店</b>下载，不要用搜索引擎随便点前几名的"下载站"。</li>
+      <li>微信/QQ 里收到「裁员名单」「违纪通报」「补偿方案」「发票」这类文件，先跟发件人电话核实再点开。</li>
+      <li>凡是让你「关闭杀毒软件再安装」的，100% 是病毒。</li>
+    </ol>
+  </div>
+
+  <div class="center">银狐防护 SilverFox Guard · 检测依据公开威胁情报（LGSRC / OpenPhish / URLhaus）与启发式规则，存在误报可能，仅供防护参考</div>
+</div>
+</body>
+</html>
