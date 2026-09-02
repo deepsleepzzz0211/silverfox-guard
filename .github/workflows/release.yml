@@ -74,6 +74,14 @@ jobs:
           node test/detector.test.mjs
           node test/otx.test.mjs
 
+      - name: Extract changelog for release
+        shell: bash
+        env:
+          INPUT_TAG: ${{ github.event.inputs.tag }}
+        run: |
+          TAG="${INPUT_TAG:-${GITHUB_REF_NAME}}"
+          python tools/extract_changelog.py "${TAG#v}" > release_notes.md
+
       # 拉取全部情报源重建基线（含重试）；全部失败时降级用仓库内基线，不阻塞发版
       - name: Refresh threat-intel baseline
         shell: bash
@@ -95,10 +103,8 @@ jobs:
       - name: Publish GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          name: 银狐防护 SilverFox Guard ${{ github.ref_name }}
-          body: |
-            安装方法：解压 zip 后，在 Chrome/Edge 扩展管理页开启「开发者模式」→「加载已解压的扩展程序」选择解压目录。
-            详细图文指南见仓库 `pages/guide/guide.html`。
-            免责声明：启发式检测存在误报可能，仅供防护参考。
+          tag_name: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref_name }}
+          name: 银狐防护 SilverFox Guard ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref_name }}
+          body_path: release_notes.md
           files: dist/*.zip
           generate_release_notes: true
