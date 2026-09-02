@@ -3,6 +3,7 @@ import { analyzeUrl, evaluateUrl, riskyDownload, downloadBlacklistHit } from "..
 import { updateBlocklist, ensureDailyAlarm, DEFAULT_OTX_PULSE_IDS } from "../lib/updater.js";
 import { getDomainAgeDays } from "../lib/domain-age.js";
 import { registrableDomain } from "../lib/host.js";
+import { buildDnrRules, buildAllowRule } from "../lib/dnr.js";
 
 const DEFAULT_SETTINGS = {
   enabled: true,
@@ -21,6 +22,10 @@ const STATS_KEY = "stats";                  // {date, today, total, events:[最�
 const DOWNLOAD_BLACKLIST_KEY = "downloadBlacklist"; // {domain: expiryMs} 用户拉黑的下载分发域名，90 天有效
 const DOWNLOAD_BLACKLIST_TTL = 90 * 24 * 60 * 60 * 1000;
 const DOWNLOAD_BLACKLIST_MAX = 500;
+const DNR_STAMP_KEY = "dnrStamp";      // 黑名单签名，变化时才重建 DNR 动态规则
+const DNR_ALLOWS_KEY = "dnrAllows";    // {ruleId: {domain, expiry}} 「仍要访问」的会话放行规则
+let dnrEnabled = false;                // DNR 网络层拦截是否已生效（规则持久化，跨 SW 重启仍有效）
+let dnrCovered = new Set();            // 已被 DNR 规则覆盖的域名（内存重建，用于跳过 webRequest 重复处理）
 
 let blocklist = null; // 内存中的黑名单（blocklistCache 优先，否则内置基线）
 let settings = { ...DEFAULT_SETTINGS };
@@ -143,6 +148,78 @@ async function blockDownloadDomain(host) {
   await chrome.storage.local.set({ [DOWNLOAD_BLACKLIST_KEY]: Object.fromEntries(entries) });
 }
 
+// ---------- DNR 网络层拦截（情报黑名单） ----------
+// 情报黑名单命中由浏览器网络层直接重定向到警告页（恶意页首帧不可见）；
+// 启发式 WARN 层仍走 webRequest 路径。规则持久化，仅在黑名单变化时重建。
+
+async function syncDnrRules() {
+  if (!blocklist) return;
+  const stamp = JSON.stringify({
+    u: blocklist.updatedAt || "",
+    c: [Object.keys(blocklist.verified || {}).length, (blocklist.phishing || []).length, (blocklist.malware || []).length],
+  });
+  const { [DNR_STAMP_KEY]: last } = await chrome.storage.local.get(DNR_STAMP_KEY);
+  const { [WHITELIST_KEY]: wl } = await chrome.storage.local.get(WHITELIST_KEY);
+  const exclude = new Set(wl || []);
+  const { rules, covered } = buildDnrRules(blocklist, { warningBase: WARNING_PAGE, exclude });
+  dnrCovered = covered;
+
+  if (last === stamp) {
+    dnrEnabled = covered.size > 0;
+    await chrome.storage.local.set({ dnrEnabled });
+    return;
+  }
+  try {
+    const existing = await chrome.declarativeNetRequest.getDynamicRules();
+    await chrome.declarativeNetRequest.updateDynamicRules({
+      addRules: rules,
+      removeRuleIds: existing.map(r => r.id),
+    });
+    dnrEnabled = rules.length > 0;
+    await chrome.storage.local.set({ [DNR_STAMP_KEY]: stamp, dnrEnabled });
+  } catch (e) {
+    dnrEnabled = false; // DNR 不可用时整体回退 webRequest 路径，功能不受损
+    console.warn("DNR sync failed, webRequest fallback active:", e);
+  }
+}
+
+function isDnrCovered(host) {
+  const labels = host.split(".");
+  for (let i = 0; i < labels.length - 1; i++) {
+    if (dnrCovered.has(labels.slice(i).join("."))) return true;
+  }
+  return false;
+}
+
+async function addDnrAllowRule(domain) {
+  try {
+    const rd = registrableDomain(domain);
+    const existing = await chrome.declarativeNetRequest.getSessionRules();
+    const used = new Set(existing.map(r => r.id));
+    let id = 2000000000;
+    while (used.has(id)) id++;
+    await chrome.declarativeNetRequest.updateSessionRules({ addRules: [buildAllowRule(rd, id)] });
+    const { [DNR_ALLOWS_KEY]: map } = await chrome.storage.session.get(DNR_ALLOWS_KEY);
+    await chrome.storage.session.set({
+      [DNR_ALLOWS_KEY]: { ...(map || {}), [id]: { domain: rd, expiry: Date.now() + 30 * 60 * 1000 } },
+    });
+  } catch (e) {
+    console.warn("DNR allow rule failed:", e);
+  }
+}
+
+async function cleanupExpiredDnrAllows() {
+  const { [DNR_ALLOWS_KEY]: map } = await chrome.storage.session.get(DNR_ALLOWS_KEY);
+  if (!map) return;
+  const now = Date.now();
+  const expired = Object.entries(map).filter(([, v]) => v.expiry <= now).map(([id]) => Number(id));
+  if (!expired.length) return;
+  await chrome.declarativeNetRequest.updateSessionRules({ removeRuleIds: expired });
+  const next = { ...map };
+  expired.forEach(id => delete next[id]);
+  await chrome.storage.session.set({ [DNR_ALLOWS_KEY]: next });
+}
+
 async function handleNavigation(tabId, url) {
   if (!settings.enabled || !blocklist) return;
   if (await isWhitelisted(url)) return;
@@ -169,6 +246,10 @@ async function handleNavigation(tabId, url) {
     }
   }
   if (!verdict) return;
+
+  // DNR 已在网络层拦截并重定向到警告页（带域名参数）的域名：
+  // webRequest 路径不再重复处理，统计由警告页 dnr 流程上报
+  if (verdict.level === "block" && dnrEnabled && isDnrCovered(host)) return;
 
   const seq = ++warnSeq;
   try {
@@ -244,11 +325,13 @@ async function runUpdate() {
   }
   blocklist = merged;
   await chrome.storage.local.set({ [BLOCKLIST_KEY]: merged });
+  await syncDnrRules(); // 黑名单变化时重建 DNR 动态规则
   return merged;
 }
 
 chrome.alarms.onAlarm.addListener(alarm => {
   if (alarm.name === "daily-blocklist-update") runUpdate().catch(console.warn);
+  if (alarm.name === "dnr-allow-cleanup") cleanupExpiredDnrAllows().catch(console.warn);
 });
 
 // ---------- 消息接口（popup / options / content / warning 页） ----------
@@ -267,14 +350,40 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
         if (!fromContentScript || typeof msg.seq !== "number") { sendResponse(false); break; }
         const data = await readWarning(msg.seq);
         if (data) {
-          const rd = baseDomainOf(new URL(data.url).hostname);
+          const rd = registrableDomain(new URL(data.url).hostname);
           const { [TEMP_WHITELIST_KEY]: twl } = await chrome.storage.local.get(TEMP_WHITELIST_KEY);
           const next = { ...(twl || {}), [rd]: Date.now() + 30 * 60 * 1000 };
           await chrome.storage.local.set({ [TEMP_WHITELIST_KEY]: next });
+          // seq 流放行同样要放开 DNR 规则，否则回跳原 URL 会被网络层再次拦截
+          if (dnrEnabled) await addDnrAllowRule(rd);
           await deleteWarning(msg.seq);
           if (typeof data.tabId === "number" && data.tabId >= 0) {
             await chrome.tabs.update(data.tabId, { url: data.url });
           }
+        }
+        sendResponse(true);
+        break;
+      }
+      case "continueDnr": {
+        // DNR 警告页的「仍要访问」：会话放行规则 + 30 分钟临时白名单 + 回跳站点首页（原始路径在网络层不可知）
+        if (!fromContentScript || typeof msg.domain !== "string") { sendResponse(false); break; }
+        const domain = msg.domain.toLowerCase().replace(/^https?:\/\//, "").replace(/\/.*$/, "");
+        const rd = registrableDomain(domain);
+        const { [TEMP_WHITELIST_KEY]: twl2 } = await chrome.storage.local.get(TEMP_WHITELIST_KEY);
+        await chrome.storage.local.set({
+          [TEMP_WHITELIST_KEY]: { ...(twl2 || {}), [rd]: Date.now() + 30 * 60 * 1000 },
+        });
+        if (dnrEnabled) await addDnrAllowRule(rd);
+        if (typeof sender.tab?.id === "number" && sender.tab.id >= 0) {
+          await chrome.tabs.update(sender.tab.id, { url: "https://" + domain + "/" });
+        }
+        sendResponse(true);
+        break;
+      }
+      case "dnrBlock": {
+        // DNR 警告页上报统计
+        if (fromContentScript && typeof msg.domain === "string") {
+          await recordBlock("威胁情报黑名单（网络层）", "https://" + msg.domain + "/");
         }
         sendResponse(true);
         break;
@@ -382,5 +491,7 @@ chrome.runtime.onStartup.addListener(() => {
 });
 
 loadState()
+  .then(() => syncDnrRules()) // SW 启动时确保 DNR 覆盖集与规则就绪（规则持久化，签名一致则跳过重建）
+  .then(() => cleanupExpiredDnrAllows())
   .then(() => updateBadge())
   .catch(console.error);

@@ -15,10 +15,17 @@
     "storage",
     "alarms",
     "webRequest",
+    "declarativeNetRequest",
     "downloads",
     "notifications"
   ],
   "host_permissions": ["<all_urls>"],
+  "web_accessible_resources": [
+    {
+      "resources": ["pages/block/warning.html"],
+      "matches": ["http://*/*", "https://*/*"]
+    }
+  ],
   "background": {
     "service_worker": "background/service-worker.js",
     "type": "module"
