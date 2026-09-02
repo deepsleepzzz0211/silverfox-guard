@@ -57,7 +57,8 @@
 
   // 搜索引擎/知识社区平台豁免：搜索结果与讨论页的标题/正文天然包含品牌词，
   // 对这些平台做品牌声称检测必然误报（实测：cn.bing.com 搜 deepseek 被误拦）
-  const TWO_LEVEL_TLDS = new Set(["com.cn", "net.cn", "org.cn", "gov.cn", "hl.cn", "hk.cn"]);
+  // 注意：TWO_LEVEL_TLDS 与 lib/host.js 为手工同步副本（content script 非模块环境）
+  const TWO_LEVEL_TLDS = new Set(["com.cn", "net.cn", "org.cn", "gov.cn", "hl.cn", "hk.cn", "tw.cn", "com.hk", "co.uk", "com.au"]);
   function registrableDomain(h) {
     const parts = h.split(".");
     if (parts.length <= 2) return h;

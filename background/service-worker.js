@@ -2,6 +2,7 @@
 import { analyzeUrl, evaluateUrl, riskyDownload, downloadBlacklistHit } from "../lib/detector.js";
 import { updateBlocklist, ensureDailyAlarm, DEFAULT_OTX_PULSE_IDS } from "../lib/updater.js";
 import { getDomainAgeDays } from "../lib/domain-age.js";
+import { registrableDomain } from "../lib/host.js";
 
 const DEFAULT_SETTINGS = {
   enabled: true,
@@ -68,14 +69,8 @@ async function getStats() {
 }
 
 // ---------- 白名单 ----------
-function baseDomainOf(host) {
-  // 与 lib/detector.js 的 registrableDomain 保持同一套二级 TLD 清单
-  const twoLevel = new Set(["com.cn", "net.cn", "org.cn", "gov.cn", "hl.cn", "hk.cn", "tw.cn", "com.hk", "co.uk", "com.au"]);
-  const parts = host.split(".");
-  const lastTwo = parts.slice(-2).join(".");
-  if (twoLevel.has(lastTwo) && parts.length >= 3) return parts.slice(-3).join(".");
-  return parts.slice(-2).join(".");
-}
+// baseDomainOf 由 lib/host.js 的 registrableDomain 单源提供
+const baseDomainOf = registrableDomain;
 
 async function isWhitelisted(url) {
   let host;
