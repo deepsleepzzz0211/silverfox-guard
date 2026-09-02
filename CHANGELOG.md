@@ -5,8 +5,25 @@
 ## [Unreleased]
 
 ### Planned
-- DNR 请求级拦截迁移（情报黑名单在网络层同步拦截）
-- `registrableDomain` 多处实现合并为 `lib/host.js` 单源
+- 浏览器端到端测试（官方 --load-extension 方案）
+- Chrome Web Store / Edge Add-ons 上架材料（权限 justification、截图）
+
+## [1.1.0] - 2026-08-30
+
+### Added
+- **DNR 请求级拦截**：情报黑名单命中在浏览器网络层直接重定向到警告页，恶意页面首帧不再可见；规则由 `lib/dnr.js` 纯函数构建（verified 优先、上限 29,500 条、白名单排除），溢出部分自动由 webRequest 路径兜底
+- 「仍要访问」同时写入 DNR 会话放行规则（按 registrable domain 含子域，优先级高于拦截规则），30 分钟闹钟自动清理过期规则
+- CHANGELOG.md（Keep a Changelog 1.1.0 格式）与 PRIVACY.md 隐私政策
+- GitHub Release 说明自动注入对应版本的 changelog 分节（`tools/extract_changelog.py`）
+- AGENTS.md 工程约束文档入库；新增 lib/host.js 与 lib/dnr.js 单测（17 用例，累计 58）
+
+### Changed
+- `registrableDomain` 合并为 `lib/host.js` 单源，统一 detector/updater/domain-age/service-worker 四处实现（content.js 副本同步 TLD 清单至 10 项）
+- 品牌官方域名判定统一为 `isOfficialDomain`，layer2/layer3 同一口径
+- manifest 新增 `declarativeNetRequest` 权限与 `web_accessible_resources`（警告页重定向目标）
+
+### Fixed
+- seq 警告页「仍要访问」回跳原站会被 DNR 规则二次拦截的循环风险（放行时同步写会话 allow 规则）
 
 ## [1.0.7] - 2026-08-30
 

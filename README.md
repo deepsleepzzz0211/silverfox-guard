@@ -48,7 +48,7 @@ node test/otx.test.mjs        # 情报源解析 11 用例
 
 ## 版本记录
 
-完整变更历史见 [CHANGELOG.md](CHANGELOG.md)（Keep a Changelog 格式，每次 Release 的说明即提取自该文件）。最新版本：**v1.0.7**（2026-08-30）。
+完整变更历史见 [CHANGELOG.md](CHANGELOG.md)（Keep a Changelog 格式，每次 Release 的说明即提取自该文件）。最新版本：**v1.1.0**（2026-08-30，DNR 请求级拦截）。
 
 ## 免责声明
 
