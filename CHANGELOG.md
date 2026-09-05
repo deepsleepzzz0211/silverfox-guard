@@ -8,6 +8,17 @@
 - 浏览器端到端测试（官方 --load-extension 方案）
 - Chrome Web Store / Edge Add-ons 上架材料（权限 justification、截图）
 
+## [1.1.1] - 2026-08-30
+
+### Added
+- 变异测试器 `tools/mutation_test.mjs`：39 个变异体（常量篡改/条件翻转/语句删除），杀除率 100%，持续守护测试有效性
+- `lib/domain-age.js` 抽出纯函数 `rdapTargetFor` 并补 9 个单测（协议/IP/localhost/租户平台排除）
+- LGSRC 解析器（Archive_2/3）导出并补 6 个单测（`[.]` 与 hxxp 混淆还原、`m.` 前缀剥离、共享平台与裸租户域名丢弃）
+- 检测引擎测试从 30 扩至 41 用例：补齐阈值边界、typosquat 编辑距离 3、随机子域元音占比窗口、合法 punycode 域名、短品牌 token（i4）等盲区
+
+### Changed
+- 测试总数从 58 扩至 85 用例；`node tools/mutation_test.mjs` 纳入常规验证手段
+
 ## [1.1.0] - 2026-08-30
 
 ### Added

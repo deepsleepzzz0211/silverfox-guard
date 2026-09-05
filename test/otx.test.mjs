@@ -1,5 +1,5 @@
-// OTX pulse / ThreatFox CSV / ABP 规则解析单元测试：node test/otx.test.mjs
-import { parseOtxPulse, parseThreatFoxCsv, parseAdblockDomains, DEFAULT_OTX_PULSE_ID } from "../lib/updater.js";
+// OTX pulse / ThreatFox CSV / ABP 规则 / LGSRC 解析单元测试：node test/otx.test.mjs
+import { parseOtxPulse, parseThreatFoxCsv, parseAdblockDomains, parseLgsrcVerified, parseLgsrcSuspect, parseUrlList, DEFAULT_OTX_PULSE_ID } from "../lib/updater.js";
 import { readFileSync } from "node:fs";
 
 const fixture = JSON.stringify({
@@ -35,7 +35,34 @@ const ABP_FIXTURE = [
   "||plain-domain.net",
 ].join("\n");
 
+const LGSRC_FIXTURE = [
+  "| 日期 | URL | 类别 | 有效载荷 | URLhaus | 编号 |",
+  "|---|---|---|---|---|---|",
+  "| 2026/01/01 | hxxp://wps-fake[.]cn/setup.exe | 仿冒WPS | payload.zip | - | 1 |",
+  "| 2026/01/02 | http://m.baidu-pan-fake.com/x | 仿冒网盘 | | | 2 |",
+  "| 2026/01/03 | https://github.com/evil/repo | 恶意样本 | | | 3 |",
+  "",
+  "其他文本行应被忽略",
+].join("\n");
+
+const LGSRC_SUSPECT_FIXTURE = [
+  "前置说明文字",
+  "```",
+  "0xx.io",
+  "github.io",
+  "```",
+].join("\n");
+
 const cases = [
+  // ---- LGSRC 解析 ----
+  { name: "LGSRC: [.] 与 hxxp 混淆还原", fn: () => "wps-fake.cn" in parseLgsrcVerified(LGSRC_FIXTURE), expect: true },
+  { name: "LGSRC: m. 前缀剥离", fn: () => parseLgsrcVerified(LGSRC_FIXTURE)["baidu-pan-fake.com"], expect: "仿冒网盘" },
+  { name: "LGSRC: github.com 共享平台丢弃", fn: () => "github.com" in parseLgsrcVerified(LGSRC_FIXTURE), expect: false },
+  { name: "LGSRC 疑似: 域名提取与 .io 两字母 TLD", fn: () => parseLgsrcSuspect(LGSRC_SUSPECT_FIXTURE).has("0xx.io"), expect: true },
+  { name: "LGSRC 疑似: 裸租户平台域名丢弃", fn: () => parseLgsrcSuspect(LGSRC_SUSPECT_FIXTURE).has("github.io"), expect: false },
+  { name: "parseUrlList: 正常域名保留", fn: () => parseUrlList("c2host.io").has("c2host.io"), expect: true },
+
+  // ---- OTX pulse ----
   { name: "domain/hostname/URL 提取为已核实域名", fn: () => "wps-office-mb.com" in parseOtxPulse(fixture), expect: true },
   { name: "中文二级 TLD 主机名保留完整子域", fn: () => "2260web.cdn-sogou.com.cn" in parseOtxPulse(fixture), expect: true },
   { name: "租户型对象存储子域保留（仅拦该 bucket）", fn: () => "bddownload.oss-cn-hongkong.aliyuncs.com" in parseOtxPulse(fixture), expect: true },

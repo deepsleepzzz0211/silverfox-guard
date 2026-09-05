@@ -8,6 +8,7 @@ const cases = [
   { name: "com.hk 子域取三段（既有契约：TLD+前一label）", fn: () => registrableDomain("a.b.com.hk"), expect: "b.com.hk" },
   { name: "co.uk 两段即主域", fn: () => registrableDomain("site.co.uk"), expect: "site.co.uk" },
   { name: "hl.cn 三段取三段（既有契约）", fn: () => registrableDomain("web.site.hl.cn"), expect: "site.hl.cn" },
+  { name: "三段普通 TLD 收敛到主域", fn: () => registrableDomain("a.b.com"), expect: "b.com" },
   { name: "TLD 清单含 10 项", fn: () => TWO_LEVEL_TLDS.size, expect: 10 },
 ];
 

@@ -9,6 +9,7 @@ node test/detector.test.mjs      # 检测引擎单测（30 用例，改 lib/ 或
 node test/otx.test.mjs           # 情报源解析单测（11 用例，改 lib/updater.js 后必跑）
 python tools/build_blocklist.py  # 重建内置基线 data/blocklist.json（需联网拉 9 源）
 python tools/build_dist.py       # 打包 dist/silverfox-guard/ + zip（产物不入库）
+node tools/mutation_test.mjs     # 变异测试：验证单测有效性（杀除率应保持 100%）
 git tag vX.Y.Z && git push origin main --tags   # 发版：CI 测试→重建基线→打包→挂 Release
 ```
 

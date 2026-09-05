@@ -5,7 +5,7 @@ const bl = {
   // 注：黑名单入库时已由 updater/构建脚本完成共享平台过滤，DNR 构建器不做重复过滤
   verified: { "wps-fake.com.cn": "银狐", "evil.com": "银狐" },
   phishing: ["phish.net", "evil.com"], // evil.com 重复 → 去重
-  malware: ["c2host.io", "phish.net"], // phish.net 重复 → 去重
+  malware: ["c2host.io", "sub.phish.net"], // phish.net 主域被白名单排除，其子域也应排除
 };
 
 const { rules, covered } = buildDnrRules(bl, { warningBase: "chrome-extension://abc/pages/block/warning.html", exclude: new Set(["phish.net"]) });
