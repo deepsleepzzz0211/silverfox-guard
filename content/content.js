@@ -11,22 +11,22 @@
   window.__silverfoxGuardChecked = true;
 
   // 与 lib/detector.js 的 BRANDS 官方域名保持一致的精简表
+    // ⚠️ 由 tools/generate-official-domains.js 同步生成，修改请运行：node tools/generate-official-domains.js
   const OFFICIAL_DOMAINS = [
-    "wps.cn", "wps.com", "kingsoft.com", "docer.com",
-    "google.com", "google.cn", "chromium.org", "bing.com", "microsoft.com",
-    "qq.com", "wechat.com", "weixin.qq.com",
-    "dingtalk.com", "alibaba.com",
-    "oray.com", "todesk.com", "anydesk.com", "teamviewer.com",
-    "i4.cn", "kugou.com", "kuwo.cn", "163.com", "netease.com",
-    "meitu.com", "youdao.com", "baidu.com", "baidupan.com",
-    "aliyundrive.com", "lanzou.com", "lanzoui.com", "lanpv.com",
-    "jianguoyun.com", "quark.cn", "uc.cn", "xunlei.com",
-    "foxit.com.cn", "foxitsoftware.cn", "huorong.cn",
-    "deepseek.com", "doubao.com", "feishu.cn", "larksuite.com",
-    "ludashi.com", "sogou.com", "xunyou.com", "mydrivers.com",
-    "zoom.us", "zoom.com", "telegram.org", "whatsapp.com",
-    "win-rar.com", "rarlab.com", "7-zip.org",
-    "xiaohongshu.com", "xhscdn.com", "dangbei.com", "xiaoheihe.cn",
+    "163.com", "7-zip.org", "alibaba.com", "aliyundrive.com", "anydesk.com",
+    "baidu.com", "baidupan.com", "bytedance.com", "chrome.com", "chromium.org",
+    "dangbei.com", "deepseek.com", "dingtalk.com", "docer.com", "doubao.com",
+    "feishu.cn", "foxit.com.cn", "foxitsoftware.cn", "google.cn", "google.com",
+    "googleapis.com", "huorong.cn", "i4.cn", "jianguoyun.com", "kingsoft.com",
+    "kugou.com", "kuwo.cn", "lanpv.com", "lanzou.com", "lanzoui.com",
+    "larksuite.com", "line.me", "linecorp.com", "live.com", "ludashi.com",
+    "meitu.com", "microsoft.com", "microsoftonline.com", "mydrivers.com", "netease.com",
+    "office.com", "oray.com", "qq.com", "quark.cn", "rarlab.com",
+    "sogou.com", "sogoucdn.com", "sunlogin.oray.com", "t.me", "teamviewer.com",
+    "telegram.org", "todesk.com", "uc.cn", "viber.com", "wechat.com",
+    "weixin.qq.com", "whatsapp.com", "win-rar.com", "wps.cn", "wps.com",
+    "wpscdn.com", "xhscdn.com", "xiaoheihe.cn", "xiaohongshu.com", "xiuxiu.meitu.com",
+    "xunlei.com", "xunyou.com", "youdao.com", "zoom.com", "zoom.us",
   ];
 
   // 标题/正文中的品牌声称词 → 品牌名（用于警告文案）
