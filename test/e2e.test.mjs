@@ -50,16 +50,18 @@ function findBuild() {
 }
 
 function resolveExecutable() {
+  // 注意：品牌版 Chrome 137+ 移除了 --load-extension 支持（静默忽略），
+  // 必须用开源 Chromium（Playwright 构建仍支持）；优先级：CHROME_PATH > playwright 缓存 > 系统路径
   if (process.env.CHROME_PATH && existsSync(process.env.CHROME_PATH)) return process.env.CHROME_PATH;
-  if (process.platform === "linux") {
-    for (const p of ["/usr/bin/google-chrome", "/usr/bin/google-chrome-stable"]) {
-      if (existsSync(p)) return p; // ubuntu-latest 自带
-    }
-  }
   try {
-    const p = chromium.executablePath(); // 本机 ms-playwright 缓存
+    const p = chromium.executablePath(); // ms-playwright 缓存（CI 先 npx playwright install chromium）
     if (p && existsSync(p)) return p;
   } catch { /* none */ }
+  if (process.platform === "linux") {
+    for (const p of ["/usr/bin/chromium", "/usr/bin/chromium-browser"]) {
+      if (existsSync(p)) return p;
+    }
+  }
   return null;
 }
 
