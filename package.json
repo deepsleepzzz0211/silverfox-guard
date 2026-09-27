@@ -5,5 +5,8 @@
   "description": "开发辅助配置（扩展本体为 manifest.json，浏览器会忽略此文件）",
   "scripts": {
     "test": "node test/detector.test.mjs"
+  },
+  "devDependencies": {
+    "playwright-core": "^1.63.0"
   }
 }
