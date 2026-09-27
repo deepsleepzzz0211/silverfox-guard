@@ -25,7 +25,7 @@ const MUTANTS = [
   { file: "lib/detector.js", desc: "黑名单命中级别 block → warn", find: 'if (hit.level === "block") {', replace: 'if (hit.level === "warn") {', tests: ["test/detector.test.mjs"] },
   { file: "lib/detector.js", desc: "疑似站点评分 60 → 55（verdict 字面量）", find: "score: 60,", replace: "score: 55,", tests: ["test/detector.test.mjs"] },
   { file: "lib/detector.js", desc: "可信平台豁免失效", find: "if (!onPlatform) {", replace: "if (true) {", tests: ["test/detector.test.mjs"] },
-  { file: "lib/detector.js", desc: "PLATFORM_TRUST 丢失 github.io", find: '"github.io", "gitlab.io"', replace: '"githubx.io", "gitlab.io"', tests: ["test/detector.test.mjs"] },
+  { file: "lib/host.js", desc: "PLATFORM_TRUST 丢失 github.io", find: '"github.io", "gitlab.io"', replace: '"githubx.io", "gitlab.io"', tests: ["test/host.test.mjs", "test/detector.test.mjs"] },
 
   // ---- lib/updater.js ----
   { file: "lib/updater.js", desc: "LGSRC [.] 混淆还原失效", find: 'text.replace(/\\[\\.\\]/g, ".")', replace: 'text.replace(/\\[x\\]/g, ".")', tests: ["test/otx.test.mjs"] },
@@ -54,8 +54,7 @@ const MUTANTS = [
   { file: "lib/domain-age.js", desc: "协议白名单检查失效", find: 'if (u.protocol !== "http:" && u.protocol !== "https:") return null;', replace: "if (false) return null;", tests: ["test/domain-age.test.mjs"] },
   { file: "lib/domain-age.js", desc: "IP 地址不再排除", find: "/^[0-9.]+$/.test(host)", replace: "/^x$/.test(host)", tests: ["test/domain-age.test.mjs"] },
   { file: "lib/domain-age.js", desc: "localhost 不再排除（等价变异：已被无点单标签检查覆盖）", find: 'host === "localhost"', replace: 'host === "localhostx"', equiv: true, tests: ["test/domain-age.test.mjs"] },
-  { file: "lib/domain-age.js", desc: "租户平台 RDAP 豁免失效", find: "if (PLATFORM_DOMAINS.has(registrable)) return null;", replace: "if (false) return null;", tests: ["test/domain-age.test.mjs"] },
-  { file: "lib/domain-age.js", desc: "PLATFORM_DOMAINS 丢失 github.io", find: '"github.io", "gitlab.io"', replace: '"githubx.io", "gitlab.io"', tests: ["test/domain-age.test.mjs"] },
+  { file: "lib/domain-age.js", desc: "租户平台 RDAP 豁免失效", find: "if (TENANT_PLATFORMS.has(registrable)) return null;", replace: "if (false) return null;", tests: ["test/domain-age.test.mjs"] },
 ];
 
 function runTests(testFiles) {

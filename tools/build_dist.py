@@ -9,6 +9,7 @@
 """
 import json
 import shutil
+import subprocess
 import zipfile
 from pathlib import Path
 
@@ -43,6 +44,15 @@ def iter_files():
 
 
 def main():
+    # 打包前自动生成 OFFICIAL_DOMAINS（从 detector.js 的 BRANDS 提取）
+    try:
+        subprocess.run(
+            ["node", "tools/generate-official-domains.js"],
+            check=True, cwd=str(ROOT), timeout=15,
+        )
+    except Exception as e:
+        print(f"warning: generate-official-domains.js failed ({e}), using cached file")
+
     manifest = json.loads((ROOT / "manifest.json").read_text(encoding="utf-8"))
     version = manifest["version"]
 
