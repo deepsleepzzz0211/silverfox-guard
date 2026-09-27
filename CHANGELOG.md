@@ -5,8 +5,21 @@
 ## [Unreleased]
 
 ### Planned
-- 浏览器端到端测试（官方 --load-extension 方案）
-- Chrome Web Store / Edge Add-ons 上架材料（权限 justification、截图）
+- ci.yml 的 e2e job 稳定性观察（ubuntu Chrome 升级随动）
+
+## [1.2.0] - 2026-09-28
+
+### Added
+- **T2 拦截调度纯逻辑提取**：`lib/navigation.js` 决策链（防护开关→白名单→URL 合法性→下载黑名单→两阶段评分→DNR 覆盖去重），依赖注入、12 用例覆盖全决策矩阵；SW 层只保留事件注册与副作用
+- **T4 端到端测试**：Playwright 驱动真实浏览器验证三条链路（DNR 拦截→警告页／「仍要访问」放行→不再二次拦截／内容脚本横幅注入）；零真实恶意流量设计（测试副本注入 RFC 2606 预留 TLD + host-resolver-rules 本地映射）
+- **T6 商店上架材料**：`store/` 目录——4 张 1280x800 规格截图（`tools/generate_screenshots.mjs` 自动生成）、权限 justification（覆盖全部权限 + <all_urls> + 远程代码声明）、中英双语 listing 文案
+- ci.yml：新增 e2e job（ubuntu 自带 Chrome）与 navigation 单测接入
+
+### Changed
+- SW `handleNavigation` 先短路 enabled 再读取 storage，disabled 状态零额外 I/O
+
+### Fixed
+- code-review（双轴）发现：SW 提取后残留死导入；「仍要访问」对已拉黑域名不再重复处理（dlHit×DNR 组合边界补测试）
 
 ## [1.1.1] - 2026-08-30
 
