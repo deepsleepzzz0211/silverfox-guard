@@ -3,6 +3,7 @@ import { analyzeUrl, evaluateUrl, riskyDownload, downloadBlacklistHit } from "..
 import { updateBlocklist, mergeCacheIntoBlocklist, ensureDailyAlarm, DEFAULT_OTX_PULSE_IDS } from "../lib/updater.js";
 import { getDomainAgeDays } from "../lib/domain-age.js";
 import { registrableDomain } from "../lib/host.js";
+import { decideNavigation } from "../lib/navigation.js";
 import { buildDnrRules, buildAllowRule } from "../lib/dnr.js";
 
 const DEFAULT_SETTINGS = {
@@ -221,40 +222,19 @@ async function cleanupExpiredDnrAllows() {
 }
 
 async function handleNavigation(tabId, url) {
-  if (!settings.enabled || !blocklist) return;
-  if (await isWhitelisted(url)) return;
-
-  // 一次性解析 URL + 快照 blocklist（T1）：
-  // 1) 两阶段评估共享同一次 URL 解析，不再各自 new URL/registrableDomain；
-  // 2) RDAP 3.5s 等待窗口内 runUpdate 可能替换全局 blocklist，快照保证两阶段评估数据一致。
-  let host = "";
-  try { host = new URL(url).hostname.toLowerCase(); } catch { return; }
-  const bl = blocklist;
-
-  // 用户拉黑的下载分发域名跨站免疫（借鉴 VirusDetector）：命中直接拦截
-  const dlHit = downloadBlacklistHit(host, await getDownloadBlacklist());
-  let verdict = dlHit
-    ? { level: "block", category: "已拉黑的下载分发域名", detail: `域名 ${dlHit} 此前被你标记为下载分发域名，跨站生效`, score: 100 }
-    : null;
-
-  // 边界优化：仅当启发式已有可疑信号（score>0）时才查询 RDAP 域名年龄，
-  // 正常网站零 RDAP 流量、零额外延迟；查询结果带 30 天缓存
-  if (!verdict && !dlHit) {
-    const first = evaluateUrl(url, bl, { sensitivity: settings.sensitivity });
-    verdict = first.verdict;
-    if (!verdict && first.score > 0) {
-      const ageDays = await getDomainAgeDays(url);
-      if (ageDays != null) {
-        const second = evaluateUrl(url, bl, { sensitivity: settings.sensitivity, ageDays });
-        verdict = second.verdict;
-      }
-    }
-  }
-  if (!verdict) return;
-
-  // DNR 已在网络层拦截并重定向到警告页（带域名参数）的域名：
-  // webRequest 路径不再重复处理，统计由警告页 dnr 流程上报
-  if (verdict.level === "block" && dnrEnabled && isDnrCovered(host)) return;
+  // 决策链在 lib/navigation.js（纯决策、依赖注入、11 用例覆盖）；SW 层只做副作用
+  const decision = await decideNavigation({
+    url,
+    enabled: settings.enabled,
+    blocklist: blocklist, // 单次读取即快照：RDAP 窗口内 runUpdate 替换全局引用不影响本轮评估
+    sensitivity: settings.sensitivity,
+    isWhitelisted: await isWhitelisted(url),
+    downloadBlacklist: await getDownloadBlacklist(),
+    dnrEnabled,
+    isDnrCoveredHost: (h) => isDnrCovered(h),
+  });
+  if (decision.action !== "redirect") return;
+  const { verdict } = decision;
 
   const seq = ++warnSeq;
   try {
