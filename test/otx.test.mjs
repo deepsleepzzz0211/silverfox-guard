@@ -1,5 +1,5 @@
-// OTX pulse / ThreatFox CSV / ABP 规则 / LGSRC 解析单元测试：node test/otx.test.mjs
-import { parseOtxPulse, parseThreatFoxCsv, parseAdblockDomains, parseLgsrcVerified, parseLgsrcSuspect, parseUrlList, DEFAULT_OTX_PULSE_ID } from "../lib/updater.js";
+// OTX pulse / ThreatFox CSV / ABP 规则 / LGSRC 解析 / 缓存合并单元测试：node test/otx.test.mjs
+import { parseOtxPulse, parseThreatFoxCsv, parseAdblockDomains, parseLgsrcVerified, parseLgsrcSuspect, parseUrlList, mergeCacheIntoBlocklist, DEFAULT_OTX_PULSE_ID } from "../lib/updater.js";
 import { readFileSync } from "node:fs";
 
 const fixture = JSON.stringify({
@@ -78,6 +78,12 @@ const cases = [
   { name: "ABP: ||domain^ 与 $ 选项规则提取", fn: () => parseAdblockDomains(ABP_FIXTURE).has("evil-cdn.net") && parseAdblockDomains(ABP_FIXTURE).has("wps-fake.com.cn"), expect: true },
   { name: "ABP: 路径规则取主机名", fn: () => parseAdblockDomains(ABP_FIXTURE).has("bad.com"), expect: true },
   { name: "ABP: @@例外/通配符行跳过（共 4 条）", fn: () => parseAdblockDomains(ABP_FIXTURE).size, expect: 4 },
+
+  // ---- 缓存累积合并（T3）----
+  { name: "合并: 缓存 verified 条目补回新结果", fn: () => mergeCacheIntoBlocklist({ verified: {}, suspect: [], phishing: [], malware: [] }, { verified: { "old-ioc.cn": "银狐" } }).verified["old-ioc.cn"], expect: "银狐" },
+  { name: "合并: 新结果优先，缓存不覆盖同名 verified", fn: () => mergeCacheIntoBlocklist({ verified: { "d.cn": "新类别" }, suspect: [], phishing: [], malware: [] }, { verified: { "d.cn": "旧类别" } }).verified["d.cn"], expect: "新类别" },
+  { name: "合并: suspect/phishing/malware 取并集", fn: () => { const m = mergeCacheIntoBlocklist({ verified: {}, suspect: ["a.cn"], phishing: [], malware: [] }, { verified: {}, suspect: ["b.cn"], phishing: ["p.cn"], malware: ["m.cn"] }); return m.suspect.length === 2 && m.phishing.length === 1 && m.malware.length === 1; }, expect: true },
+  { name: "合并: 缓存为 null 时原样返回", fn: () => { const m = { verified: {}, suspect: ["x"], phishing: [], malware: [] }; return mergeCacheIntoBlocklist(m, null) === m && m.suspect.length === 1; }, expect: true },
 ];
 
 let pass = 0, fail = 0;

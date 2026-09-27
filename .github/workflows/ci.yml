@@ -1,0 +1,37 @@
+# 快速验证：push 到 main 或 PR 时跑全部单元测试（发版的完整测试在 release.yml）
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: Unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Run unit tests
+        run: |
+          node test/detector.test.mjs
+          node test/host.test.mjs
+          node test/otx.test.mjs
+          node test/dnr.test.mjs
+          node test/domain-age.test.mjs
+
+      - name: Mutation test (kill rate must stay 100%)
+        run: node tools/mutation_test.mjs

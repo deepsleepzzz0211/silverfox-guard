@@ -1,6 +1,6 @@
 // 银狐防护 - Service Worker（MV3）
 import { analyzeUrl, evaluateUrl, riskyDownload, downloadBlacklistHit } from "../lib/detector.js";
-import { updateBlocklist, ensureDailyAlarm, DEFAULT_OTX_PULSE_IDS } from "../lib/updater.js";
+import { updateBlocklist, mergeCacheIntoBlocklist, ensureDailyAlarm, DEFAULT_OTX_PULSE_IDS } from "../lib/updater.js";
 import { getDomainAgeDays } from "../lib/domain-age.js";
 import { registrableDomain } from "../lib/host.js";
 import { buildDnrRules, buildAllowRule } from "../lib/dnr.js";
@@ -224,9 +224,14 @@ async function handleNavigation(tabId, url) {
   if (!settings.enabled || !blocklist) return;
   if (await isWhitelisted(url)) return;
 
-  // 用户拉黑的下载分发域名跨站免疫（借鉴 VirusDetector）：命中直接拦截
+  // 一次性解析 URL + 快照 blocklist（T1）：
+  // 1) 两阶段评估共享同一次 URL 解析，不再各自 new URL/registrableDomain；
+  // 2) RDAP 3.5s 等待窗口内 runUpdate 可能替换全局 blocklist，快照保证两阶段评估数据一致。
   let host = "";
   try { host = new URL(url).hostname.toLowerCase(); } catch { return; }
+  const bl = blocklist;
+
+  // 用户拉黑的下载分发域名跨站免疫（借鉴 VirusDetector）：命中直接拦截
   const dlHit = downloadBlacklistHit(host, await getDownloadBlacklist());
   let verdict = dlHit
     ? { level: "block", category: "已拉黑的下载分发域名", detail: `域名 ${dlHit} 此前被你标记为下载分发域名，跨站生效`, score: 100 }
@@ -235,12 +240,12 @@ async function handleNavigation(tabId, url) {
   // 边界优化：仅当启发式已有可疑信号（score>0）时才查询 RDAP 域名年龄，
   // 正常网站零 RDAP 流量、零额外延迟；查询结果带 30 天缓存
   if (!verdict && !dlHit) {
-    const first = evaluateUrl(url, blocklist, { sensitivity: settings.sensitivity });
+    const first = evaluateUrl(url, bl, { sensitivity: settings.sensitivity });
     verdict = first.verdict;
     if (!verdict && first.score > 0) {
       const ageDays = await getDomainAgeDays(url);
       if (ageDays != null) {
-        const second = evaluateUrl(url, blocklist, { sensitivity: settings.sensitivity, ageDays });
+        const second = evaluateUrl(url, bl, { sensitivity: settings.sensitivity, ageDays });
         verdict = second.verdict;
       }
     }
@@ -310,19 +315,9 @@ async function runUpdate() {
     { ...settings.sources, otxPulseIds: settings.otxPulseIds },
     baseline
   );
-  // 合并保留旧缓存中有而基线没有的条目（基线随版本更新，缓存累积最新情报）
+  // 缓存累积合并（语义见 updater.js mergeCacheIntoBlocklist：缓存优先、只增不减）
   const { [BLOCKLIST_KEY]: cached } = await chrome.storage.local.get(BLOCKLIST_KEY);
-  if (cached) {
-    for (const [dom, cat] of Object.entries(cached.verified || {})) {
-      if (!merged.verified[dom]) merged.verified[dom] = cat;
-    }
-    const old = new Set([...(cached.suspect || []), ...merged.suspect]);
-    merged.suspect = [...old];
-    const ph = new Set([...(cached.phishing || []), ...merged.phishing]);
-    merged.phishing = [...ph];
-    const mw = new Set([...(cached.malware || []), ...merged.malware]);
-    merged.malware = [...mw];
-  }
+  mergeCacheIntoBlocklist(merged, cached);
   blocklist = merged;
   await chrome.storage.local.set({ [BLOCKLIST_KEY]: merged });
   await syncDnrRules(); // 黑名单变化时重建 DNR 动态规则
