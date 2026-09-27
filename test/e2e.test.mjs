@@ -112,6 +112,7 @@ const profile = mkdtempSync(join(tmpdir(), "sfg-profile-"));
 
 let context;
 try {
+  console.log("E2E: launching context...");
   context = await chromium.launchPersistentContext(profile, {
     executablePath,
     headless: true,
@@ -123,12 +124,31 @@ try {
     ],
   });
 
-    // ---- 用例 1：DNR 请求级拦截全链路 ----
+    // ---- 扩展加载诊断：MV3 SW 必须出现，否则后续用例无意义 ----
+  let swUp = false;
+  try {
+    await waitFor(() => {
+      const sws = context.serviceWorkers();
+      return sws.some(w => w.url().includes("service-worker.js"));
+    }, 20000);
+    swUp = true;
+  } catch { /* SW 未出现 */ }
+  const swUrls = context.serviceWorkers().map(w => w.url());
+  report("扩展加载：MV3 service worker 已注册", swUp, `SW 列表: ${JSON.stringify(swUrls)}`);
+  if (!swUp) {
+    // 无 SW 时直接诊断退出：headless 扩展兼容问题，本地/CI 需区分
+    console.log("e2e: 扩展未能加载（headless 扩展兼容性），判为失败");
+    await context.close().catch(() => {});
+    srv.close(); rmSync(tmp, { recursive: true, force: true }); rmSync(profile, { recursive: true, force: true });
+    process.exit(1);
+  }
+
+  // ---- 用例 1：DNR 请求级拦截全链路 ----
   try {
     const page = await context.newPage();
     // DNR 规则在 SW 启动后异步建立；ERR_SOCKS/ERR_NAME 注入前的重定向可能让 goto 抛错，统一轮询判定
     let landed = false, catText = "";
-    for (let i = 0; i < 10 && !landed; i++) {
+    for (let i = 0; i < 20 && !landed; i++) {
       try { await page.goto(`https://${E2E_DOMAIN}/`, { timeout: 8000 }); } catch { /* ERR_ABORTED/DNS 均可能 */ }
       landed = page.url().includes("warning.html");
       if (landed) {
@@ -141,7 +161,7 @@ try {
       }
     }
     report("DNR: 访问黑名单域名被重定向到警告页", landed && catText.includes("E2E 测试注入"),
-      landed ? `类别文案异常: ${catText}` : `DNR 未生效（安全失败：.invalid 不连接外部）`);
+      landed ? `类别文案异常: ${catText}` : `20 次尝试后未重定向（安全失败：.invalid 不连接外部）`);
 
     // ---- 用例 2：「仍要访问」放行 ----
     if (landed) {
