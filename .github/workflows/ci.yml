@@ -52,11 +52,13 @@ jobs:
       - name: Build extension package
         run: python tools/build_dist.py
 
-      - name: Install playwright-core
-        run: npm install --save-dev playwright-core
+      - name: Install playwright-core and xvfb
+        run: |
+          npm install --save-dev playwright-core
+          sudo apt-get install -y xvfb
 
-      - name: Run e2e tests
+      - name: Run e2e tests (headful under xvfb — MV3 扩展在 headless 下不加载)
         env:
           # ubuntu-latest 自带 Chrome；e2e 用合成夹具（.invalid 预留 TLD + 本地映射），零真实恶意流量
           CHROME_PATH: /usr/bin/google-chrome
-        run: node test/e2e.test.mjs
+        run: xvfb-run -a node test/e2e.test.mjs

@@ -115,7 +115,7 @@ try {
   console.log("E2E: launching context...");
   context = await chromium.launchPersistentContext(profile, {
     executablePath,
-    headless: true,
+    headless: false, // MV3 扩展在 headless 下不加载（CI 实测），headful + Xvfb 是 Playwright 官方推荐
     args: [
       `--disable-extensions-except=${ext}`,
       `--load-extension=${ext}`,
