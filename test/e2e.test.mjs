@@ -6,7 +6,7 @@
 //   2) 内容脚本测试用 --host-resolver-rules 把 banner.e2e.test 映射到
 //      本地服务器（Chrome 原生 DNS 映射，不改 hosts、不查外部 DNS）。
 //   3) 全新浏览器 profile，测试结束即弃。
-// 浏览器：系统已装的 Chrome 或 Edge（playwright-core channel 模式，零下载）。
+// 浏览器解析顺序：CHROME_PATH 环境变量 → Linux 系统 Chrome（CI）→ 本机 ms-playwright 缓存（零下载）；找不到则跳过。
 // 用法：node test/e2e.test.mjs（需先 python tools/build_dist.py 生成 dist/）
 import { chromium } from "playwright-core";
 import { spawnSync } from "node:child_process";

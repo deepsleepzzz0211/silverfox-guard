@@ -4,6 +4,7 @@
 import { chromium } from "playwright-core";
 import { mkdirSync, rmSync, writeFileSync } from "node:fs";
 import { join, dirname } from "node:path";
+import { tmpdir } from "node:os";
 import { fileURLToPath } from "node:url";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
@@ -50,7 +51,7 @@ const CHROME_STUB = `
 const ext = join(ROOT, "dist", "silverfox-guard");
 const extUrl = `file:///${ext.replace(/\\/g, "/")}`;
 // popup 是 320px 窄卡片：iframe 包装居中于渐变背景，凑商店 1280x800 规格
-const wrapperPath = join(OUT, "_popup_wrapper.html");
+const wrapperPath = join(tmpdir(), "sfg-popup-wrapper.html"); // 中间产物，不随仓库分发
 writeFileSync(wrapperPath, `<!doctype html><html><head><meta charset="utf-8"><style>
   body { margin:0; height:100vh; display:flex; align-items:center; justify-content:center;
          background: linear-gradient(135deg, #2b2d42, #404258); }

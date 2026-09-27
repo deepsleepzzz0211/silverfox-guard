@@ -1,7 +1,6 @@
 // 银狐防护 - Service Worker（MV3）
-import { analyzeUrl, evaluateUrl, riskyDownload, downloadBlacklistHit } from "../lib/detector.js";
+import { analyzeUrl, riskyDownload, downloadBlacklistHit } from "../lib/detector.js";
 import { updateBlocklist, mergeCacheIntoBlocklist, ensureDailyAlarm, DEFAULT_OTX_PULSE_IDS } from "../lib/updater.js";
-import { getDomainAgeDays } from "../lib/domain-age.js";
 import { registrableDomain } from "../lib/host.js";
 import { decideNavigation } from "../lib/navigation.js";
 import { buildDnrRules, buildAllowRule } from "../lib/dnr.js";
@@ -222,11 +221,12 @@ async function cleanupExpiredDnrAllows() {
 }
 
 async function handleNavigation(tabId, url) {
-  // 决策链在 lib/navigation.js（纯决策、依赖注入、11 用例覆盖）；SW 层只做副作用
+  // 决策链在 lib/navigation.js（纯决策、依赖注入、12 用例覆盖）；SW 层只做副作用
+  if (!settings.enabled || !blocklist) return; // 先短路，disabled 时不触发 storage 读取
   const decision = await decideNavigation({
     url,
-    enabled: settings.enabled,
-    blocklist: blocklist, // 单次读取即快照：RDAP 窗口内 runUpdate 替换全局引用不影响本轮评估
+    enabled: true,
+    blocklist, // 单次读取即快照：RDAP 窗口内 runUpdate 替换全局引用不影响本轮评估
     sensitivity: settings.sensitivity,
     isWhitelisted: await isWhitelisted(url),
     downloadBlacklist: await getDownloadBlacklist(),

@@ -32,6 +32,31 @@ jobs:
           node test/otx.test.mjs
           node test/dnr.test.mjs
           node test/domain-age.test.mjs
+          node test/navigation.test.mjs
 
       - name: Mutation test (kill rate must stay 100%)
         run: node tools/mutation_test.mjs
+
+  e2e:
+    name: E2E (browser)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Build extension package
+        run: python tools/build_dist.py
+
+      - name: Install playwright-core
+        run: npm install --save-dev playwright-core
+
+      - name: Run e2e tests
+        env:
+          # ubuntu-latest 自带 Chrome；e2e 用合成夹具（.invalid 预留 TLD + 本地映射），零真实恶意流量
+          CHROME_PATH: /usr/bin/google-chrome
+        run: node test/e2e.test.mjs

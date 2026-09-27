@@ -1,7 +1,7 @@
 # 商店权限说明（Permission Justification）
 
 > 提交 Chrome Web Store 与 Edge Add-ons 时，Privacy practices / 权限说明处逐项粘贴。
-> 依据：docs/扩展开发最佳实践.md 第三节（上架阻塞项清单）。
+> 依据：docs/扩展开发最佳实践.md 附录 A3（上架阻塞项清单）。
 
 ## 单一用途说明（Single Purpose）
 
@@ -35,8 +35,12 @@
 
 **否**。扩展不加载、不执行任何远程托管的代码。每日更新的威胁情报均为**纯数据**（域名/URL 文本列表，来自 LGSRC / OpenPhish / URLhaus 等公开 feed），由扩展内置解析器在本地解析为黑名单。
 
+## 隐私政策
+
+公网可访问的隐私政策（商店必填项）：https://github.com/deepsleepzzz0211/silverfox-guard/blob/main/PRIVACY.md
+
 ## 数据使用披露
 
-- 不收集、不传输、不出售任何个人身份信息或浏览数据（详见仓库 PRIVACY.md）
+- 不收集、不传输、不出售任何个人身份信息或浏览数据（详见上述隐私政策）
 - 唯一对外请求：① 拉取公开威胁情报 feed（每日/手动）；② 对启发式评分已可疑的站点向公共 RDAP 服务查询域名注册年龄（仅发送域名，不发送用户信息；正常网站不触发）
 - 所有检测与存储均在本地完成
